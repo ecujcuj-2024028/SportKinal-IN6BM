@@ -37,6 +37,59 @@ export const Users = () => {
     }
   }, [error])
 
+// useMemo evita recalcular el filtro en cada render
+const filteredUsers = useMemo(() => {
+  
+  // Limpia el texto de búsqueda
+  const normalizedSearch = search.trim().toLowerCase();
+
+  // Filtra la lista de usuarios
+  return users.filter((u) => {
+
+    // Construye el nombre completo (nombre + apellido)
+    // Si alguno no existe, usa string vacío
+    // Luego lo limpia y lo pasa a minúsculas
+    const fullName = `${u.name || ""} ${u.surname || ""}`
+      .trim()
+      .toLowerCase();
+
+    // Obtiene el username en minúsculas
+    const username = (u.username || "").toLowerCase();
+
+    // Obtiene el rol en mayúsculas
+    const role = (u.role || "").toUpperCase();
+
+    // Verifica si coincide con la búsqueda:
+    // - Si no hay texto, todos pasan
+    // - Si hay texto, busca en nombre completo o username
+    const matchesSearch =
+      !normalizedSearch ||
+      fullName.includes(normalizedSearch) ||
+      username.includes(normalizedSearch);
+
+    // Verifica el filtro de rol:
+    // - Si es "ALL", acepta todos
+    // - Si no, compara el rol del usuario
+    const matchesRole =
+      roleFilter === "ALL"
+        ? true
+        : role === roleFilter.toUpperCase();
+
+    // El usuario se incluye solo si cumple ambas condiciones
+    return matchesRole && matchesSearch;
+  });
+
+// Dependencias: se recalcula solo si cambia algo de esto
+}, [users, search, roleFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredUsers.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+
+  const paginatedUsers = useMemo (() => {
+    const start = (currentPage - 1) * PAGE_SIZE
+    return filteredUsers.slice(start, start + PAGE_SIZE);
+  })
+
   const handleSaveRole = async (user, newRole) => {
     const res = await updateUserRole(user.id, newRole);
     if (res && res.success) {
@@ -96,13 +149,24 @@ export const Users = () => {
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-4 mb-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           <input
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value)
+              setPage(1)
+            }}
             placeholder="Buscar por nombre o username..."
             className="md:col-span-2 w-full px-3 py-2 border rounded-lg"
           />
-          <select className="w-full px-3 py-2 border rounded-lg">
-            <option>Todos los roles</option>
-            <option>ADMIN_ROLE</option>
-            <option>USER_ROLE</option>
+          <select 
+          value={roleFilter}
+          onChange={(e) => {
+            setRoleFilter(e.target.value)
+            setPage(1)
+          }}
+          className="w-full px-3 py-2 border rounded-lg">
+            <option value="ALL">Todos los roles</option>
+            <option value="ADMIN_ROLE">ADMIN_ROLE</option>
+            <option value="USER_ROLE">USER_ROLE</option>
           </select>
         </div>
       </div>
@@ -123,7 +187,7 @@ export const Users = () => {
 
             {/* Body (datos de ejemplo) */}
             <tbody>
-              {users.length === 0 ? ( //si no hay usuarios, mostrar un mensaje de estado vacío
+              {paginatedUsers.length === 0 ? ( //si no hay usuarios, mostrar un mensaje de estado vacío
                 <tr>
                   <td
                     className="px-4 py-6 text-center text-gray-500"
@@ -133,7 +197,7 @@ export const Users = () => {
                   </td>
                 </tr>
               ) : (
-                users.map((u) => (
+                paginatedUsers.map((u) => (
                   <tr key={u.id} className="border-t hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium text-gray-800">
                       {[u.name, u.surname].filter(Boolean).join(" ") || "-"}
@@ -167,17 +231,31 @@ export const Users = () => {
 
         {/* Paginación */}
         <div className="flex items-center justify-between px-4 py-3 border-t bg-gray-50">
-          <p className="text-xs text-gray-600">Mostrando 1 - 8 de 20</p>
+          <p className="text-xs text-gray-600">
+            Mostrando {" "}
+            {(currentPage - 1) * PAGE_SIZE + (paginatedUsers.length ? 1: 0 )}
+            {" - "}
+            {(currentPage - 1) * PAGE_SIZE + paginatedUsers.length} de {" "}
+            {filteredUsers.length}
+            </p>
 
           <div className="flex gap-2">
-            <button className="px-3 py-1.5 rounded border bg-white text-sm">
-              Anterior
+            <button 
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 rounded border bg-white text-sm">
+                Anterior
             </button>
 
-            <span className="px-2 py-1.5 text-sm text-gray-700">1 / 3</span>
+            <span className="px-2 py-1.5 text-sm text-gray-700">
+              {currentPage} / {totalPages}
+            </span>
 
-            <button className="px-3 py-1.5 rounded border bg-white text-sm">
-              Siguiente
+            <button
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 rounded border bg-white text-sm">
+                Siguiente
             </button>
           </div>
         </div>
