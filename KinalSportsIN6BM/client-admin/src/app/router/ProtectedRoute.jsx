@@ -1,5 +1,5 @@
-import { Navigate } from "react-router-dom";
-import { Spinner } from "@material-tailwind/react";
+import { Navigate, Outlet } from "react-router-dom";
+import { Spinner } from "../../shared/components/layout/Spinner.jsx";
 import { useAuthStore } from "../../features/auth/store/authStore";
 
 export const ProtectedRoute = ({ children }) => {
@@ -9,5 +9,5 @@ export const ProtectedRoute = ({ children }) => {
   if (isLoadingAuth) return <Spinner />;
   if (!isAuthenticated) return <Navigate to="/" replace />;
 
-  return children;
+  return children || <Outlet />;
 };

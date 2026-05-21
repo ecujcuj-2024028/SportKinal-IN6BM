@@ -37,11 +37,11 @@ public class GlobalExceptionMiddleware(RequestDelegate next, ILogger<GlobalExcep
                 Detail = businessEx.Message,
                 ErrorCode = businessEx.ErrorCode
             },
-            UnauthorizedAccessException => new ErrorResponse
+            UnauthorizedAccessException unauthEx => new ErrorResponse
             {
                 StatusCode = (int)HttpStatusCode.Unauthorized,
                 Title = "Unauthorized",
-                Detail = "Credenciales inválidas o permisos insuficientes"
+                Detail = unauthEx.Message ?? "Credenciales inválidas o permisos insuficientes"
             },
             ArgumentException argEx => new ErrorResponse
             {

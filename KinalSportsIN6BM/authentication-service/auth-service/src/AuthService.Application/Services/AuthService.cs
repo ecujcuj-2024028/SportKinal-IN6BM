@@ -176,21 +176,21 @@ public class AuthService(
         if (user == null)
         {
             logger.LogFailedLoginAttempt();
-            throw new UnauthorizedAccessException("Invalid credentials");
+            throw new UnauthorizedAccessException("Credenciales inválidas");
         }
 
         // Verificar si el usuario está activo
         if (!user.Status)
         {
             logger.LogFailedLoginAttempt();
-            throw new UnauthorizedAccessException("User account is disabled");
+            throw new UnauthorizedAccessException("Cuenta de usuario desactivada o pendiente de verificación");
         }
 
         // Verificar contraseña
         if (!passwordHashService.VerifyPassword(loginDto.Password, user.Password))
         {
             logger.LogFailedLoginAttempt();
-            throw new UnauthorizedAccessException("Invalid credentials");
+            throw new UnauthorizedAccessException("Credenciales inválidas");
         }
 
         logger.LogUserLoggedIn();

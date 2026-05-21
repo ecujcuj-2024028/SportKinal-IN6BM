@@ -5,7 +5,6 @@ import { showError, showSuccess } from "../../../shared/utils/toast.js";
 import { CreateUserModal } from "./CreateUserModal.jsx";
 import { useAuthStore } from "../../auth/store/authStore.js";
 import { UserDetailModal } from "./UserDetailModal.jsx";
-import { updateUserRole } from "../../../shared/api/index.js";
 
 const PAGE_SIZE = 8;
 

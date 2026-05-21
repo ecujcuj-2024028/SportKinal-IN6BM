@@ -22,3 +22,11 @@ export const updateUserRole = async (userId, roleName) => {
 export const verifyEmail = async (token) => {
     return await axiosAuth.post("/auth/verify-email", {token})
 }
+
+export const forgotPassword = async (data) => {
+    return await axiosAuth.post("/auth/forgot-password", data)
+}
+
+export const resetPassword = async (data) => {
+    return await axiosAuth.post("/auth/reset-password", data)
+}

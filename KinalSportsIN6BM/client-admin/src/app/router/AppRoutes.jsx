@@ -1,7 +1,8 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 
 import { AuthPage } from "../../features/auth/pages/AuthPage.jsx";
 import { VerifyEmailPage } from "../../features/auth/pages/VerifyEmailPage.jsx";
+import { ResetPasswordPage } from "../../features/auth/pages/ResetPasswordPage.jsx";
 import { Unauthorized } from "../../features/auth/pages/UnauthorizedPage.jsx";
 
 import { DashboardPage } from "../layouts/DashboardPage.jsx";
@@ -21,6 +22,7 @@ export const AppRoutes = () => {
             {/* ===================== */}
             <Route path="/" element={<AuthPage />} />
             <Route path="/verify-email" element={<VerifyEmailPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/unauthorized" element={<Unauthorized />} />
 
             {/* ===================== */}
@@ -30,6 +32,7 @@ export const AppRoutes = () => {
                 <Route element={<RoleGuard allowedRoles={["ADMIN_ROLE"]} />}>
 
                     <Route path="/dashboard" element={<DashboardPage />}>
+                        <Route index element={<Navigate to="/dashboard/users" replace />} />
                         <Route path="users" element={<Users />} />
                         <Route path="fields" element={<Fields />} />
                     </Route>

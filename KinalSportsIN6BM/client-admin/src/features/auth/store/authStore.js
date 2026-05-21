@@ -2,9 +2,11 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import {
     login as loginRequest,
-    register as registerRequest
+    register as registerRequest,
+    forgotPassword as forgotPasswordRequest,
+    resetPassword as resetPasswordRequest
 } from "../../../shared/api"
-import { showError } from "../../../shared/utils/toast";
+import { showError, showSuccess } from "../../../shared/utils/toast";
 
 export const useAuthStore = create(
     persist(
@@ -15,7 +17,7 @@ export const useAuthStore = create(
             expiresAt: null,
             loading: false,
             error: null,
-            isLoadingAuth: true,
+            isLoadingAuth: false,
             isAuthenticated: false,
 
             checkAuth: () => {
@@ -110,8 +112,47 @@ export const useAuthStore = create(
                     expiresAt: null,
                     isAuthenticated: false
                 })
+            },
+
+            forgotPassword: async (email) => {
+                try {
+                    set({ loading: true, error: null });
+                    const { data } = await forgotPasswordRequest({ email });
+                    set({ loading: false });
+                    showSuccess(data.message || "Enlace de recuperación enviado");
+                    return { success: true };
+                } catch (err) {
+                    const message = err.response?.data?.message || "Error al solicitar recuperación";
+                    set({ error: message, loading: false });
+                    showError(message);
+                    return { success: false, error: message };
+                }
+            },
+
+            resetPassword: async (token, newPassword) => {
+                try {
+                    set({ loading: true, error: null });
+                    const { data } = await resetPasswordRequest({ token, newPassword });
+                    set({ loading: false });
+                    showSuccess(data.message || "Contraseña restablecida correctamente");
+                    return { success: true };
+                } catch (err) {
+                    const message = err.response?.data?.message || "Error al restablecer contraseña";
+                    set({ error: message, loading: false });
+                    showError(message);
+                    return { success: false, error: message };
+                }
             }
         }),
-        { name: "auth-storage" }
+        { 
+            name: "auth-storage",
+            partialize: (state) => ({
+                user: state.user,
+                token: state.token,
+                refreshToken: state.refreshToken,
+                expiresAt: state.expiresAt,
+                isAuthenticated: state.isAuthenticated
+            })
+        }
     )
 )

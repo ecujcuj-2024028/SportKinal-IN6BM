@@ -1,11 +1,16 @@
 import { useForm } from "react-hook-form"
+import { useAuthStore } from "../store/authStore";
 
 export const ForgotPasswordForm = ({ onSwitch }) => {
 
   const { register, handleSubmit, formState: { errors } } = useForm();
+  const { forgotPassword, loading } = useAuthStore();
 
-  const onSubmit = (data) => {
-    console.log(data);
+  const onSubmit = async (data) => {
+    const result = await forgotPassword(data.email);
+    if (result.success) {
+      onSwitch();
+    }
   };
 
   return (
@@ -34,9 +39,10 @@ export const ForgotPasswordForm = ({ onSwitch }) => {
 
       <button
         type="submit"
+        disabled={loading}
         className="w-full bg-main-blue text-white py-2 rounded-lg disabled:opacity-50 hover:opacity-90"
       >
-        Enviar Correo
+        {loading ? "Enviando..." : "Enviar Correo"}
       </button>
 
       <p className="text-center text-sm text-gray-600">
